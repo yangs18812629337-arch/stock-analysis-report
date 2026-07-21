@@ -1,0 +1,27 @@
+请不要把 localhost 链接发给别人。
+
+原因：
+localhost 只代表“当前这台设备自己”。你电脑上的 http://localhost:5173/
+在别人手机里会变成“别人手机自己”，所以 Safari 会显示无法连接服务器。
+
+正确分享方式：
+
+方式一：直接发送文件
+把 daily-market-report.html 这个文件发给别人。
+对方下载后，用浏览器打开这个 HTML 文件即可查看页面。
+
+方式二：上传到公网
+把 index.html 和 daily-market-report.html 上传到任意静态网页托管平台，例如：
+GitHub Pages、Cloudflare Pages、Netlify、Vercel、公司服务器等。
+然后把平台给出的 https:// 开头网址发给别人。
+
+方式三：同一 Wi-Fi 临时访问
+如果对方和你的电脑在同一个 Wi-Fi：
+1. 在你的电脑上运行网页服务。
+2. 找到你电脑的局域网 IP，例如 192.168.x.x。
+3. 对方访问 http://你的电脑IP:5173/
+注意：这种方式只适合同一网络，离开 Wi-Fi 就不能打开。
+
+结论：
+别人不能打开 localhost 是正常现象，不是网页坏了。
+要给别人长期打开，请使用公网 https 链接。

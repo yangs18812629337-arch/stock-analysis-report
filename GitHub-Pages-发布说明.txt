@@ -1,0 +1,26 @@
+GitHub Pages 发布方式
+
+请先在 GitHub 创建一个公开仓库，例如：
+stock-analysis-report
+
+然后把仓库完整名称发给我，例如：
+你的用户名/stock-analysis-report
+
+我会上传这些文件：
+1. index.html
+2. daily-market-report.html
+3. .nojekyll
+
+上传后，在 GitHub 仓库里打开：
+Settings -> Pages
+
+Source 选择：
+Deploy from a branch
+
+Branch 选择：
+main / root
+
+保存后，GitHub 会生成一个公网地址：
+https://你的用户名.github.io/stock-analysis-report/
+
+以后别人手机、电脑都应该打开这个 https 地址，不要再打开 localhost。
