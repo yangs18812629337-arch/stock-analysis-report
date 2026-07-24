@@ -768,7 +768,13 @@ function renderMonthKlineTrend(q,rows){const el=document.getElementById('monthTr
     function datesLabel(s){return String(s||'').slice(5)}
     function renderOverseasSourceCards(msg){const el=document.getElementById('overseasTrendEChart');if(!el)return;el.className='sourceGrid';el.innerHTML=overseasMarkets.map(m=>'<a class="realSource compact" href="'+m.url+'" target="_blank"><span class="tag">'+m.country+' / \u4e1c\u65b9\u8d22\u5bcc</span><h3>'+m.name+'</h3><p>'+msg+'</p><small>\u6253\u5f00\u771f\u5b9e\u884c\u60c5 \u2192</small></a>').join('');document.getElementById('overseasTrendNote').textContent=msg+' \u5df2\u4fdd\u7559\u56fd\u5185\u53ef\u8bbf\u95ee\u7684\u771f\u5b9e\u884c\u60c5\u5165\u53e3\u3002'}
     function parseRssItems(xml,feed){const doc=new DOMParser().parseFromString(xml,'text/xml');return[...doc.querySelectorAll('item')].slice(0,2).map(item=>({topic:feed.topic,title:item.querySelector('title')?.textContent||'\u8d22\u7ecf\u65b0\u95fb\u8ffd\u8e2a',url:item.querySelector('link')?.textContent||feed.url,date:item.querySelector('pubDate')?.textContent?new Date(item.querySelector('pubDate').textContent).toLocaleString('zh-CN',{hour12:false}):'\u4eca\u65e5',source:item.querySelector('source')?.textContent||'\u4e1c\u65b9\u8d22\u5bcc'}))}
-    async function loadRealWorldNews(){renderVerifiedWorldNews()}
+    async function loadRealWorldNews(){
+      const keywords=['美股','海外科技 半导体 AI','日经 KOSPI 港股','全球市场 美联储'];
+      const batches=await Promise.all(keywords.map(async keyword=>{const cb='world_'+Date.now()+'_'+Math.random().toString(36).slice(2),param={uid:'',keyword,type:['cmsArticleWebOld'],client:'web',clientType:'web',clientVersion:'curr',param:{cmsArticleWebOld:{searchScope:'default',sort:'default',pageIndex:1,pageSize:10}}};return new Promise(resolve=>{let done=false;const finish=rows=>{if(done)return;done=true;try{delete window[cb]}catch(e){}resolve(rows||[])};window[cb]=d=>finish(d?.result?.cmsArticleWebOld||[]);loadScript('https://search-api-web.eastmoney.com/search/jsonp?cb='+cb+'&param='+encodeURIComponent(JSON.stringify(param)),'utf-8').catch(()=>finish([]));setTimeout(()=>finish([]),5000)})}));
+      const rows=batches.flat().map(n=>({...n,title:String(n.title||'').replace(/<[^>]+>/g,''),content:String(n.content||'').replace(/<[^>]+>/g,''),source:n.mediaName||n.source||'东方财富'}));
+      renderRealWorldNews(rows);
+      return rows;
+    }
     function renderVerifiedWorldNews(){document.getElementById('worldNews').innerHTML=verifiedWorldNews.map(n=>'<a class="realSource" href="'+n.url+'" target="_blank"><small>'+n.source+' / '+n.date+'</small><h3>'+n.title+'</h3><p>'+n.content+'</p><span class="newsAction">打开详情 / 来源 →</span></a>').join('')}
     function renderRealWorldNews(rows){const used=new Set(rows.map(x=>x.topic)),fill=verifiedWorldNews.filter(f=>!used.has(f.topic));const list=rows.concat(fill).slice(0,6);document.getElementById('worldNews').innerHTML=list.map(n=>'<a class="realSource" href="'+n.url+'" target="_blank"><small>'+(n.source||'\u4e1c\u65b9\u8d22\u5bcc')+' / '+(n.date||'\u4eca\u65e5')+'</small><h3>'+n.title+'</h3><p>'+(n.content||'\u8bf7\u6253\u5f00\u6765\u6e90\u9875\u67e5\u770b\u5f53\u5929\u771f\u5b9e\u65b0\u95fb\u3002')+'</p><span class="newsAction">打开详情 / 来源 →</span></a>').join('')}
     function renderRealNewsFallback(){renderVerifiedWorldNews()}
@@ -1083,14 +1089,11 @@ function renderMetrics(q,pct,amp,pos){renderQuoteFacts(q);const pctTone=pct>0?'r
       host.innerHTML=list.map(n=>newsCard(n)).join('');
     };
     renderVerifiedWorldNews=function(){
-      const list=rankHotNews(verifiedWorldNews||[],6,'world');
-      document.getElementById('worldNews').innerHTML=list.map(n=>newsCard(n,'realSource')).join('');
+      document.getElementById('worldNews').innerHTML='<div class="newsEmpty"><b>正在获取最新海外新闻</b><p>按发布时间检索美股、海外科技、日韩港股和全球宏观新闻。</p></div>';
     };
     renderRealWorldNews=function(rows){
-      const used=new Set((rows||[]).map(x=>x.topic));
-      const fill=(verifiedWorldNews||[]).filter(f=>!used.has(f.topic));
-      const list=rankHotNews((rows||[]).concat(fill),6,'world');
-      document.getElementById('worldNews').innerHTML=list.map(n=>newsCard(n,'realSource')).join('');
+      const list=rankHotNews((rows||[]).filter(isActualNews),6,'world'),host=document.getElementById('worldNews');
+      host.innerHTML=list.length?list.map(n=>newsCard(n,'realSource')).join(''):'<div class="newsEmpty"><b>暂无可核验的最新海外新闻</b><p>当前未取得最近72小时的海外新闻，暂不展示旧日期内容。</p></div>';
     };
     /* Market trend contract: fixed to Shanghai Composite, always render a single interactive intraday line. */
     drawMarketTrendEChart=function(){
